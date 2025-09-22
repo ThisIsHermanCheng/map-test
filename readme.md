@@ -1,30 +1,46 @@
 # Hong Kong Interactive Map
 
-A fully functional interactive map application built with HTML, CSS, and JavaScript that provides comprehensive mapping capabilities with multiple tile sources and zoom levels.
+A professional-grade interactive map application built with modern HTML, CSS, and JavaScript that provides precise tile positioning and comprehensive zoom level support for Hong Kong mapping data.
 
-![Hong Kong Interactive Map](https://github.com/user-attachments/assets/49eb2b4b-69e9-49a9-a12e-9053cc85b698)
+![Hong Kong Interactive Map](https://github.com/user-attachments/assets/70066b7d-fd45-4bdd-a05f-b59f5f6a4c92)
 
 ## Features
 
-- **Full Zoom Range**: Support for zoom levels 1-18, providing global coverage down to street-level detail
-- **Multiple Tile Sources**: Seamlessly switches between Hong Kong Government tiles (zoom 12-13) and OpenStreetMap (all zoom levels)
-- **Interactive Controls**: Zoom in/out using buttons or keyboard shortcuts (+/- keys)
-- **Dynamic Tile Management**: Automatically selects the best tile source based on zoom level and coverage
-- **Real-time Information**: Display current coordinates, zoom level, and tile information
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Smart Fallback**: Uses OpenStreetMap tiles when HK Government tiles are unavailable
+- **Comprehensive Zoom Support**: Full zoom range from 8-18 with precise tile coordinate mapping
+- **Professional Tile Management**: Class-based architecture with proper tile caching and positioning
+- **Precise Coordinate System**: Accurate tile coordinate calculations based on confirmed Hong Kong Government tile constraints
+- **Interactive Controls**: Smooth zoom controls with +/- buttons and responsive pan functionality
+- **Real-time Coordinate Display**: Click anywhere on the map to see exact tile coordinates
+- **Touch-Enabled**: Full support for mobile devices with touch events
+- **Performance Optimized**: Efficient tile rendering and memory management
 
-## Tile Sources
+## Technical Architecture
 
-### Hong Kong Government Maps (Zoom 12-13)
-- **High-resolution official maps** for Hong Kong territory
-- **Base URL**: `https://services2.map.gov.hk/ib20000/tile/{z}/{x}/{y}?blankTile=false`
-- **Coverage**: Limited to specific tile coordinates within Hong Kong
+### Tile Coordinate System
+Built using the proven coordinate constraints provided by the Hong Kong Government mapping service:
 
-### OpenStreetMap (Zoom 1-18)
-- **Global coverage** with community-driven mapping data
-- **Base URL**: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`
-- **Fallback source** for areas and zoom levels outside HK Government coverage
+```
+Zoom Level | X Range      | Y Range
+8          | 47-49        | 35-37
+9          | 95-97        | 71-73
+10         | 191-193      | 142-145
+11         | 383-386      | 285-290
+12         | 767-772      | 571-579
+13         | 1534-1544    | 1142-1158
+14         | 3068-3088    | 2284-2315
+15         | 6136-6176    | 4568-4630
+16         | 12273-12352  | 9136-9259
+17         | 24546-24704  | 18272-18518
+18         | 49093-49408  | 36544-37036
+```
+
+### Class-Based Implementation
+The application is built around a robust `HongKongMap` class that handles:
+
+- **Tile Management**: Efficient loading, caching, and positioning of map tiles
+- **Event Handling**: Mouse and touch events for panning and zooming
+- **Coordinate Calculations**: Precise screen-to-tile coordinate conversions
+- **Viewport Management**: Dynamic tile rendering based on visible area
 
 ## Usage
 
@@ -39,86 +55,110 @@ npx http-server
 # Then open http://localhost:8000 in your browser
 ```
 
-### Controls
-- **Zoom In**: Click the `+` button or press `+` key
-- **Zoom Out**: Click the `-` button or press `-` key
-- **Pan**: Click and drag the map (touch-enabled for mobile)
-- **Tile Information**: Click on any tile to view detailed coordinate information
+### Interactive Controls
+- **Zoom**: Use `+` and `-` buttons to change zoom levels (8-18)
+- **Pan**: Click and drag the map to navigate around Hong Kong
+- **Coordinate Info**: Click anywhere on the map to see tile coordinates
+- **Touch Support**: Full gesture support on mobile devices
 
-## Technical Implementation
+## API Reference
 
-### Coordinate System
-- **Projection**: Web Mercator (EPSG:3857)
-- **Center**: Hong Kong (22.396428°N, 114.109497°E)
-- **Tile Scheme**: Standard XYZ tile scheme with automatic coordinate conversion
-
-### Smart Tile Selection
-The application intelligently selects the appropriate tile source:
+### HongKongMap Class
 
 ```javascript
-// Automatically chooses HK Government tiles when available
-if (isValidHKTile(z, x, y)) {
-    // Use high-resolution HK Government tiles
-    tileUrl = `https://services2.map.gov.hk/ib20000/tile/${z}/${x}/${y}?blankTile=false`;
-} else {
-    // Fallback to OpenStreetMap for global coverage
-    tileUrl = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
-}
+// Initialize the map
+const map = new HongKongMap('map-container-id');
+
+// Public methods
+map.zoomIn();           // Increase zoom level
+map.zoomOut();          // Decrease zoom level
+map.render();           // Re-render the map
 ```
 
-### Key Functions
-- `initializeMap()`: Initialize map and controls
-- `createTileGrid()`: Generate responsive tile grid based on current view
-- `isValidHKTile(z, x, y)`: Check if HK Government tiles are available for coordinates
-- `latLngToTile()` / `tileToLatLng()`: Coordinate conversion utilities
-- `setupMapControls()`: Handle zoom controls and keyboard shortcuts
+### Configuration Options
+- **Tile Size**: 256px standard web map tiles
+- **Zoom Range**: 8 (regional view) to 18 (street level detail)
+- **Coordinate System**: Web Mercator (EPSG:3857)
+- **Tile Source**: Hong Kong Government Map Service
 
 ## Project Structure
 
 ```
-├── index.html          # Main HTML page with responsive layout
-├── styles.css          # CSS styling with modern design
-├── script.js           # JavaScript functionality and tile management
-├── readme.md           # Project documentation
-└── .gitignore          # Git ignore file
+├── index.html          # Main HTML structure with semantic layout
+├── styles.css          # Modern CSS with responsive design
+├── script.js           # ES6+ JavaScript with class-based architecture
+├── readme.md           # Comprehensive documentation
+└── .gitignore          # Git ignore configuration
 ```
 
-## Features in Detail
+## Technical Highlights
 
-### Responsive Tile Grid
-- **4x3 tile grid** that adapts to different zoom levels
-- **Visual distinction** between tile sources using color-coded borders
-- **Loading animations** and error handling for failed tile requests
+### Precise Tile Positioning
+```javascript
+// Calculate exact tile position based on screen coordinates
+const screenX = (tileX - this.centerX) * this.tileSize + centerScreenX + this.offsetX;
+const screenY = (tileY - this.centerY) * this.tileSize + centerScreenY + this.offsetY;
+```
 
-### Information Panel
-- **Real-time coordinates** showing current map center
-- **Current zoom level** with source indicator
-- **Tile coordinates** in Z/X/Y format
-- **Source legend** explaining available tile layers
+### Efficient Viewport Rendering
+```javascript
+// Only render tiles within the visible viewport plus buffer
+for (let tileY = startTileY; tileY <= endTileY; tileY++) {
+    for (let tileX = startTileX; tileX <= endTileX; tileX++) {
+        if (this.isTileAvailable(tileX, tileY, this.currentZoom)) {
+            // Render tile
+        }
+    }
+}
+```
 
-### Keyboard Support
-- Press `+` or `=` to zoom in
-- Press `-` to zoom out
-- Intuitive controls for better user experience
+### Touch and Mouse Event Handling
+```javascript
+// Unified event handling for desktop and mobile
+this.container.addEventListener('mousedown', this.handleMouseDown.bind(this));
+this.container.addEventListener('touchstart', this.handleTouchStart.bind(this));
+```
 
 ## Browser Compatibility
 
-- **Modern browsers** supporting ES6+ features
-- **CSS Grid** support required for tile layout
-- **Touch events** supported for mobile devices
-- **Keyboard navigation** for accessibility
+- **Modern Browsers**: Supports all current versions of Chrome, Firefox, Safari, and Edge
+- **ES6+ Features**: Uses modern JavaScript features including classes and arrow functions
+- **CSS Grid**: Utilizes CSS Grid for responsive layout design
+- **Mobile Support**: Optimized for touch devices and responsive breakpoints
+
+## Performance Features
+
+- **Tile Caching**: Intelligent tile reuse to minimize network requests
+- **Lazy Loading**: Tiles only load when needed for current viewport
+- **Memory Management**: Automatic cleanup of off-screen tiles
+- **Smooth Animations**: Hardware-accelerated transforms for panning
+
+## Development Guidelines
+
+### Code Architecture
+- **Class-based design** for maintainable object-oriented structure
+- **Event-driven architecture** for responsive user interactions
+- **Separation of concerns** between rendering, events, and data management
+
+### Best Practices
+- **Error handling** for failed tile requests
+- **Performance optimization** for smooth user experience
+- **Accessibility support** with keyboard navigation
+- **Cross-platform compatibility** for desktop and mobile
 
 ## Contributing
 
-This project demonstrates advanced web mapping techniques with multiple tile sources. Feel free to submit issues and enhancement requests for additional features like:
+This project demonstrates advanced web mapping techniques with precise coordinate handling. Areas for potential enhancement:
 
-- Additional tile sources
-- Geolocation support
-- Offline caching
-- Custom markers and overlays
+- WebGL rendering for improved performance
+- Custom overlay support for markers and shapes
+- Offline caching with Service Workers
+- Multi-touch gesture support for advanced navigation
 
 ## License
 
-This project demonstrates the use of Hong Kong Government map tiles and OpenStreetMap data. Please refer to each service's terms of use:
-- [Hong Kong Government Map Terms](https://services2.map.gov.hk/ib20000/ib20000.html)
-- [OpenStreetMap Copyright](https://www.openstreetmap.org/copyright)
+This project demonstrates the use of Hong Kong Government map tiles. Please refer to the [Hong Kong Government Map Terms](https://services2.map.gov.hk/ib20000/ib20000.html) for official usage guidelines.
+
+## Acknowledgments
+
+Built following the technical specifications and coordinate constraints provided by the Hong Kong Government mapping service for accurate geographic representation.

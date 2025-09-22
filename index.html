@@ -11,47 +11,46 @@
 <body>
     <div class="header">
         <h1>Hong Kong Interactive Map</h1>
-        <p>Full-featured interactive map with multiple zoom levels and tile sources</p>
+        <p>Interactive map with comprehensive zoom levels and precise tile positioning</p>
     </div>
     
     <div class="map-container">
-        <div id="map">
-            <div class="map-grid" id="mapGrid"></div>
-            <div class="map-controls">
-                <button id="zoomIn" class="control-btn">+</button>
-                <button id="zoomOut" class="control-btn">-</button>
-            </div>
-            <div class="crosshair"></div>
+        <div id="map"></div>
+        <div class="map-controls">
+            <button id="zoom-in" class="control-btn">+</button>
+            <button id="zoom-out" class="control-btn">-</button>
         </div>
     </div>
     
     <div class="info-panel">
         <h3>Map Information</h3>
         <p><strong>Coordinate System:</strong> Web Mercator (EPSG:3857)</p>
-        <p><strong>Tile Sources:</strong> Hong Kong Government Map Service + OpenStreetMap</p>
-        <p><strong>Available Zoom Levels:</strong> <span id="zoomLevels">1-18</span></p>
+        <p><strong>Tile Source:</strong> Hong Kong Government Map Service</p>
+        <p><strong>Available Zoom Levels:</strong> 8-18</p>
         <div id="coordinates">
             <p><strong>Current View:</strong></p>
-            <p>Zoom: <span id="zoom">10</span></p>
-            <p>Center: <span id="center">22.396, 114.109</span></p>
-            <p>Tile: <span id="tileCoords">Z/X/Y</span></p>
+            <p id="zoom-level">Zoom: 13</p>
+            <p id="coordinates">Click on map to see tile coordinates</p>
         </div>
         <div class="tile-info">
-            <h4>Tile Sources</h4>
-            <p><strong>HK Government (Zoom 12-13):</strong> High-resolution official Hong Kong maps</p>
-            <p><strong>OpenStreetMap (All zooms):</strong> Global coverage with community-driven data</p>
-            <p><strong>Controls:</strong> Use +/- buttons or keyboard (+/-) to zoom</p>
+            <h4>Tile Coverage by Zoom Level</h4>
+            <p><strong>Zoom 8:</strong> X: 47-49, Y: 35-37</p>
+            <p><strong>Zoom 9:</strong> X: 95-97, Y: 71-73</p>
+            <p><strong>Zoom 10:</strong> X: 191-193, Y: 142-145</p>
+            <p><strong>Zoom 11:</strong> X: 383-386, Y: 285-290</p>
+            <p><strong>Zoom 12:</strong> X: 767-772, Y: 571-579</p>
+            <p><strong>Zoom 13:</strong> X: 1534-1544, Y: 1142-1158</p>
+            <p><strong>Zoom 14:</strong> X: 3068-3088, Y: 2284-2315</p>
+            <p><strong>Zoom 15:</strong> X: 6136-6176, Y: 4568-4630</p>
+            <p><strong>Zoom 16:</strong> X: 12273-12352, Y: 9136-9259</p>
+            <p><strong>Zoom 17:</strong> X: 24546-24704, Y: 18272-18518</p>
+            <p><strong>Zoom 18:</strong> X: 49093-49408, Y: 36544-37036</p>
         </div>
-        <div class="layer-legend">
-            <h4>Legend</h4>
-            <div class="legend-item">
-                <div class="legend-color hk-tile-sample"></div>
-                <span>Hong Kong Government Tiles (12-13)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color osm-tile-sample"></div>
-                <span>OpenStreetMap Tiles (1-18)</span>
-            </div>
+        <div class="controls-info">
+            <h4>Controls</h4>
+            <p><strong>Zoom:</strong> Use +/- buttons</p>
+            <p><strong>Pan:</strong> Click and drag the map</p>
+            <p><strong>Info:</strong> Click on tiles to see coordinates</p>
         </div>
     </div>
     
