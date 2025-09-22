@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hong Kong Interactive Map</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Hong Kong Interactive Map</h1>
+        <p>Interactive map with comprehensive zoom levels and precise tile positioning</p>
+    </div>
+    
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="map-controls">
+            <button id="zoom-in" class="control-btn">+</button>
+            <button id="zoom-out" class="control-btn">-</button>
+        </div>
+    </div>
+    
+    <div class="info-panel">
+        <h3>Map Information</h3>
+        <p><strong>Coordinate System:</strong> Web Mercator (EPSG:3857)</p>
+        <p><strong>Tile Source:</strong> Hong Kong Government Map Service</p>
+        <p><strong>Available Zoom Levels:</strong> 8-18</p>
+        <div id="coordinates">
+            <p><strong>Current View:</strong></p>
+            <p id="zoom-level">Zoom: 13</p>
+            <p id="coordinates">Click on map to see tile coordinates</p>
+        </div>
+        <div class="tile-info">
+            <h4>Tile Coverage by Zoom Level</h4>
+            <p><strong>Zoom 8:</strong> X: 47-49, Y: 35-37</p>
+            <p><strong>Zoom 9:</strong> X: 95-97, Y: 71-73</p>
+            <p><strong>Zoom 10:</strong> X: 191-193, Y: 142-145</p>
+            <p><strong>Zoom 11:</strong> X: 383-386, Y: 285-290</p>
+            <p><strong>Zoom 12:</strong> X: 767-772, Y: 571-579</p>
+            <p><strong>Zoom 13:</strong> X: 1534-1544, Y: 1142-1158</p>
+            <p><strong>Zoom 14:</strong> X: 3068-3088, Y: 2284-2315</p>
+            <p><strong>Zoom 15:</strong> X: 6136-6176, Y: 4568-4630</p>
+            <p><strong>Zoom 16:</strong> X: 12273-12352, Y: 9136-9259</p>
+            <p><strong>Zoom 17:</strong> X: 24546-24704, Y: 18272-18518</p>
+            <p><strong>Zoom 18:</strong> X: 49093-49408, Y: 36544-37036</p>
+        </div>
+        <div class="controls-info">
+            <h4>Controls</h4>
+            <p><strong>Zoom:</strong> Use +/- buttons</p>
+            <p><strong>Pan:</strong> Click and drag the map</p>
+            <p><strong>Info:</strong> Click on tiles to see coordinates</p>
+        </div>
+    </div>
+    
+    <!-- Custom JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
