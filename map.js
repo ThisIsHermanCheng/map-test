@@ -6,9 +6,9 @@ class HongKongMap {
         this.minZoom = 8;
         this.maxZoom = 18;
         
-        // Current view center (in tile coordinates) - adjusted to center within valid range
-        this.centerX = 1539; // Center of available tiles for zoom 13 (1534-1544)
-        this.centerY = 1150; // From the example URL
+        // Current view center (in tile coordinates) - will be calculated per zoom level
+        this.centerX = 1539; // Default for zoom 13
+        this.centerY = 1150; // Default for zoom 13
         
         // Pan offset from center
         this.offsetX = 0;
@@ -32,6 +32,9 @@ class HongKongMap {
         this.tiles = new Map();
         this.isDragging = false;
         this.dragStart = { x: 0, y: 0 };
+        
+        // Initialize center coordinates for current zoom level
+        this.updateCenterForZoom();
         
         this.init();
     }
@@ -130,11 +133,12 @@ class HongKongMap {
             const oldZoom = this.currentZoom;
             this.currentZoom++;
             
-            // Adjust center coordinates for new zoom level
-            this.centerX = this.centerX * 2;
-            this.centerY = this.centerY * 2;
-            this.offsetX = this.offsetX * 2;
-            this.offsetY = this.offsetY * 2;
+            // Reset offsets when changing zoom levels to center properly
+            this.offsetX = 0;
+            this.offsetY = 0;
+            
+            // Update center coordinates for new zoom level
+            this.updateCenterForZoom();
             
             this.updateZoomDisplay();
             this.clearTiles();
@@ -147,11 +151,12 @@ class HongKongMap {
             const oldZoom = this.currentZoom;
             this.currentZoom--;
             
-            // Adjust center coordinates for new zoom level
-            this.centerX = Math.floor(this.centerX / 2);
-            this.centerY = Math.floor(this.centerY / 2);
-            this.offsetX = Math.floor(this.offsetX / 2);
-            this.offsetY = Math.floor(this.offsetY / 2);
+            // Reset offsets when changing zoom levels to center properly
+            this.offsetX = 0;
+            this.offsetY = 0;
+            
+            // Update center coordinates for new zoom level
+            this.updateCenterForZoom();
             
             this.updateZoomDisplay();
             this.clearTiles();
@@ -161,6 +166,15 @@ class HongKongMap {
     
     updateZoomDisplay() {
         document.getElementById('zoom-level').textContent = `Zoom: ${this.currentZoom}`;
+    }
+    
+    updateCenterForZoom() {
+        const constraints = this.tileConstraints[this.currentZoom];
+        if (constraints) {
+            // Center within the valid tile range
+            this.centerX = Math.floor((constraints.x[0] + constraints.x[1]) / 2);
+            this.centerY = Math.floor((constraints.y[0] + constraints.y[1]) / 2);
+        }
     }
     
     clearTiles() {
@@ -235,19 +249,28 @@ class HongKongMap {
         const startTileY = Math.floor((centerScreenY - this.offsetY) / this.tileSize) + this.centerY - Math.ceil(containerHeight / this.tileSize / 2) - 1;
         const endTileY = startTileY + Math.ceil(containerHeight / this.tileSize) + 2;
         
-        // Render visible tiles
+        // Get valid tile constraints for current zoom level
+        const constraints = this.tileConstraints[this.currentZoom];
+        
+        // Render visible tiles, but only within valid constraints
         for (let tileX = startTileX; tileX <= endTileX; tileX++) {
             for (let tileY = startTileY; tileY <= endTileY; tileY++) {
-                const tileElement = this.createTileElement(tileX, tileY, this.currentZoom);
-                
-                // Position the tile
-                const screenX = (tileX - this.centerX) * this.tileSize + centerScreenX + this.offsetX;
-                const screenY = (tileY - this.centerY) * this.tileSize + centerScreenY + this.offsetY;
-                
-                tileElement.style.left = `${screenX}px`;
-                tileElement.style.top = `${screenY}px`;
-                
-                this.container.appendChild(tileElement);
+                // Only render tiles within valid constraints
+                if (constraints && 
+                    tileX >= constraints.x[0] && tileX <= constraints.x[1] &&
+                    tileY >= constraints.y[0] && tileY <= constraints.y[1]) {
+                    
+                    const tileElement = this.createTileElement(tileX, tileY, this.currentZoom);
+                    
+                    // Position the tile
+                    const screenX = (tileX - this.centerX) * this.tileSize + centerScreenX + this.offsetX;
+                    const screenY = (tileY - this.centerY) * this.tileSize + centerScreenY + this.offsetY;
+                    
+                    tileElement.style.left = `${screenX}px`;
+                    tileElement.style.top = `${screenY}px`;
+                    
+                    this.container.appendChild(tileElement);
+                }
             }
         }
     }
