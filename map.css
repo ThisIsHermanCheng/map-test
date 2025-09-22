@@ -1,0 +1,129 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+.map-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.map {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    cursor: grab;
+    background-color: #e6f3ff;
+    overflow: hidden;
+}
+
+.map:active {
+    cursor: grabbing;
+}
+
+.map-tile {
+    position: absolute;
+    width: 256px;
+    height: 256px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: #f8f8f8;
+    transition: opacity 0.3s ease;
+}
+
+.map-tile img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.map-tile.loading {
+    background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%), 
+                linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    animation: loading-animation 1s linear infinite;
+}
+
+@keyframes loading-animation {
+    0% { background-position: 0 0, 10px 10px; }
+    100% { background-position: 20px 20px, 30px 30px; }
+}
+
+.map-tile.error {
+    background-color: #ffeeee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 12px;
+}
+
+.map-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.map-controls button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.map-controls button:hover {
+    background-color: #f0f0f0;
+}
+
+.map-controls button:active {
+    background-color: #e0e0e0;
+}
+
+#zoom-level {
+    background-color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-size: 12px;
+    text-align: center;
+}
+
+.map-info {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    background-color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.map-info div:first-child {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#coordinates {
+    color: #666;
+}

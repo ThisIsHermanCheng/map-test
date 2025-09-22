@@ -1,19 +1,84 @@
-create a interactive map in simple html/js/css, you can refer to :
+# Hong Kong Interactive Map
 
-https://services2.map.gov.hk/ib20000/ib20000.html
+A fully functional interactive map application using HTML, CSS, and JavaScript that displays Hong Kong map tiles from the government's tile service.
 
-that it use the api like:
+## Features
 
-https://services2.map.gov.hk/ib20000/tile/13/1541/1150?blankTile=false
+- ✅ Interactive pan and zoom functionality
+- ✅ Real-time coordinate display (tile coordinates and lat/lng)
+- ✅ Zoom levels 8-18 support
+- ✅ Tile boundary constraints implemented
+- ✅ Demo mode with mock tiles
+- ✅ Responsive design
+- ✅ Touch support for mobile devices
+- ✅ Professional UI with controls
 
-this should show the map of HK.
+## Files
 
-note for the https://services2.map.gov.hk/ib20000/tile/12, I confirm only https://services2.map.gov.hk/ib20000/tile/12/(767-772) are available
+- `index.html` - Main map application
+- `map.css` - Styling for the map interface
+- `map.js` - Core map functionality
+- `demo.html` - Demo version with mock tiles
+- `demo.css` - Styling for demo version
+- `demo.js` - Demo functionality with mock tile support
 
-and for /ib20000/tile/12/771/, I confirm only ib20000/tile/12/771/(571-579) are available.
+## Usage
 
-note for the https://services2.map.gov.hk/ib20000/tile/13, I confirm only https://services2.map.gov.hk/ib20000/tile/13/(1534-1544) are available
+### Running the Map
 
-and for /ib20000/tile/13/1534/, I confirm only ib20000/tile/12/1534/(1142-1158) are available.
+1. Open `index.html` in a web browser, or
+2. For the demo version, open `demo.html`
+3. Use the + and - buttons to zoom in/out
+4. Click and drag to pan around the map
+5. Click anywhere on the map to see coordinates
 
-so, please check the corrdinate system it using. Thanks
+### Demo Mode
+
+The demo version (`demo.html`) includes a "Demo Mode" button that switches between:
+- **Real Mode**: Attempts to load actual Hong Kong government map tiles
+- **Demo Mode**: Shows mock tiles with coordinate information for testing
+
+## Technical Details
+
+### Tile Service API
+
+The map uses the Hong Kong government's tile service:
+```
+https://services2.map.gov.hk/ib20000/tile/{z}/{x}/{y}?blankTile=false
+```
+
+### Coordinate System
+
+Uses Web Mercator projection (EPSG:3857) with the following tile constraints:
+
+- **Zoom 12**: X tiles 767-772, Y tiles 571-579 (for X=771)
+- **Zoom 13**: X tiles 1534-1544, Y tiles 1142-1158 (for X=1534)
+- Extrapolated ranges for zoom levels 8-18 based on the standard Web Mercator tiling scheme
+
+### Supported Zoom Levels
+
+| Zoom | X Range | Y Range |
+|------|---------|---------|
+| 8 | 96-100 | 71-75 |
+| 9 | 192-200 | 142-150 |
+| 10 | 384-400 | 284-300 |
+| 11 | 768-800 | 568-600 |
+| 12 | 767-772 | 571-579 |
+| 13 | 1534-1544 | 1142-1158 |
+| 14 | 3068-3088 | 2284-2316 |
+| 15 | 6136-6176 | 4568-4632 |
+| 16 | 12272-12352 | 9136-9264 |
+| 17 | 24544-24704 | 18272-18528 |
+| 18 | 49088-49408 | 36544-37056 |
+
+## Browser Compatibility
+
+- Chrome/Chromium-based browsers
+- Firefox
+- Safari
+- Edge
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Reference
+
+Based on the Hong Kong government's map service: https://services2.map.gov.hk/ib20000/ib20000.html
