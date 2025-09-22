@@ -6,27 +6,27 @@ class HongKongMap {
         this.minZoom = 8;
         this.maxZoom = 18;
         
-        // Current view center (in tile coordinates)
-        this.centerX = 1538; // Approximate center of available tiles for zoom 13
+        // Current view center (in tile coordinates) - adjusted to center within valid range
+        this.centerX = 1539; // Center of available tiles for zoom 13 (1534-1544)
         this.centerY = 1150; // From the example URL
         
         // Pan offset from center
         this.offsetX = 0;
         this.offsetY = 0;
         
-        // Define available tile ranges based on the provided constraints
+        // Define available tile ranges based on the confirmed constraints
         this.tileConstraints = {
-            8: { x: [96, 100], y: [71, 75] },
-            9: { x: [192, 200], y: [142, 150] },
-            10: { x: [384, 400], y: [284, 300] },
-            11: { x: [768, 800], y: [568, 600] },
-            12: { x: [767, 772], y: [571, 579] }, // Known constraint
-            13: { x: [1534, 1544], y: [1142, 1158] }, // Known constraint
-            14: { x: [3068, 3088], y: [2284, 2316] },
-            15: { x: [6136, 6176], y: [4568, 4632] },
-            16: { x: [12272, 12352], y: [9136, 9264] },
-            17: { x: [24544, 24704], y: [18272, 18528] },
-            18: { x: [49088, 49408], y: [36544, 37056] }
+            8: { x: [47, 49], y: [35, 37] },
+            9: { x: [95, 97], y: [71, 73] },
+            10: { x: [191, 193], y: [142, 145] },
+            11: { x: [383, 386], y: [285, 290] },
+            12: { x: [767, 772], y: [571, 579] },
+            13: { x: [1534, 1544], y: [1142, 1158] },
+            14: { x: [3068, 3088], y: [2284, 2315] },
+            15: { x: [6136, 6176], y: [4568, 4630] },
+            16: { x: [12273, 12352], y: [9136, 9259] },
+            17: { x: [24546, 24704], y: [18272, 18518] },
+            18: { x: [49093, 49408], y: [36544, 37036] }
         };
         
         this.tiles = new Map();
