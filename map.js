@@ -253,8 +253,8 @@ class HongKongMap {
         const constraints = this.tileConstraints[this.currentZoom];
         
         // Render visible tiles, but only within valid constraints
-        for (let tileX = startTileX; tileX <= endTileX; tileX++) {
-            for (let tileY = startTileY; tileY <= endTileY; tileY++) {
+        for (let tileY = startTileY; tileY <= endTileY; tileY++) {
+            for (let tileX = startTileX; tileX <= endTileX; tileX++) {
                 // Only render tiles within valid constraints
                 if (constraints && 
                     tileX >= constraints.x[0] && tileX <= constraints.x[1] &&
