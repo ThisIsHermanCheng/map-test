@@ -2,11 +2,11 @@
 
 // Hong Kong coordinates (approximate center)
 const HONG_KONG_CENTER = { lat: 22.396428, lng: 114.109497 };
-let currentZoom = 13;
+let currentZoom = 10;
 let currentCenter = { ...HONG_KONG_CENTER };
 
-// Tile bounds based on the provided information
-const TILE_BOUNDS = {
+// Tile bounds for Hong Kong Government tiles (only available at zoom 12-13)
+const HK_TILE_BOUNDS = {
     12: {
         x: { min: 767, max: 772 },
         y: { 771: { min: 571, max: 579 } }
@@ -16,6 +16,12 @@ const TILE_BOUNDS = {
         y: { 1534: { min: 1142, max: 1158 } }
     }
 };
+
+// Map configuration
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 18;
+const TILES_PER_ROW = 4;
+const TILES_PER_COL = 3;
 
 // Map state
 let mapElement;
@@ -47,16 +53,31 @@ function setupMapControls() {
     const zoomOutBtn = document.getElementById('zoomOut');
     
     zoomInBtn.addEventListener('click', () => {
-        if (currentZoom < 13) {
+        if (currentZoom < MAX_ZOOM) {
             currentZoom++;
             updateMapView();
         }
     });
     
     zoomOutBtn.addEventListener('click', () => {
-        if (currentZoom > 12) {
+        if (currentZoom > MIN_ZOOM) {
             currentZoom--;
             updateMapView();
+        }
+    });
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '+' || e.key === '=') {
+            if (currentZoom < MAX_ZOOM) {
+                currentZoom++;
+                updateMapView();
+            }
+        } else if (e.key === '-') {
+            if (currentZoom > MIN_ZOOM) {
+                currentZoom--;
+                updateMapView();
+            }
         }
     });
 }
@@ -115,26 +136,16 @@ function endDrag() {
 function createTileGrid() {
     mapGrid.innerHTML = '';
     
-    const tilesPerRow = currentZoom === 12 ? 3 : 4;
-    const tilesPerCol = currentZoom === 12 ? 2 : 3;
+    mapGrid.style.gridTemplateColumns = `repeat(${TILES_PER_ROW}, 1fr)`;
+    mapGrid.style.gridTemplateRows = `repeat(${TILES_PER_COL}, 1fr)`;
     
-    mapGrid.style.gridTemplateColumns = `repeat(${tilesPerRow}, 1fr)`;
-    mapGrid.style.gridTemplateRows = `repeat(${tilesPerCol}, 1fr)`;
+    // Calculate center tile coordinates for current view
+    const centerTile = latLngToTile(currentCenter.lat, currentCenter.lng, currentZoom);
     
-    // Use the center of the valid tile ranges for Hong Kong
-    let centerTileX, centerTileY;
-    if (currentZoom === 12) {
-        centerTileX = 771; // Center of 767-772
-        centerTileY = 575; // Center of 571-579
-    } else { // zoom 13
-        centerTileX = 1539; // Center of 1534-1544
-        centerTileY = 1150; // Center of 1142-1158
-    }
-    
-    for (let row = 0; row < tilesPerCol; row++) {
-        for (let col = 0; col < tilesPerRow; col++) {
-            const tileX = centerTileX - Math.floor(tilesPerRow / 2) + col;
-            const tileY = centerTileY - Math.floor(tilesPerCol / 2) + row;
+    for (let row = 0; row < TILES_PER_COL; row++) {
+        for (let col = 0; col < TILES_PER_ROW; col++) {
+            const tileX = centerTile.x - Math.floor(TILES_PER_ROW / 2) + col;
+            const tileY = centerTile.y - Math.floor(TILES_PER_COL / 2) + row;
             
             createTile(tileX, tileY, currentZoom);
         }
@@ -150,30 +161,49 @@ function createTile(x, y, z) {
     label.textContent = `${z}/${x}/${y}`;
     tile.appendChild(label);
     
-    // Check if tile is within valid bounds
-    if (isValidTile(z, x, y)) {
-        const tileUrl = `https://services2.map.gov.hk/ib20000/tile/${z}/${x}/${y}?blankTile=false`;
-        
-        // Try to load the tile image
-        const img = new Image();
-        img.onload = () => {
-            tile.style.backgroundImage = `url(${tileUrl})`;
-            tile.classList.remove('loading');
-            tile.classList.add('loaded');
-            label.style.display = 'none';
-        };
-        img.onerror = () => {
-            tile.classList.remove('loading');
-            tile.classList.add('error');
-            label.textContent = `${z}/${x}/${y} (unavailable)`;
-        };
-        img.src = tileUrl;
+    // Determine which tile service to use
+    let tileUrl;
+    let isHKTile = false;
+    
+    // Check if we can use HK Government tiles
+    if (isValidHKTile(z, x, y)) {
+        tileUrl = `https://services2.map.gov.hk/ib20000/tile/${z}/${x}/${y}?blankTile=false`;
+        isHKTile = true;
+        tile.classList.add('hk-tile');
     } else {
-        tile.classList.remove('loading');
-        tile.classList.add('error');
-        label.textContent = `${z}/${x}/${y} (out of bounds)`;
+        // Use OpenStreetMap as fallback
+        tileUrl = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+        tile.classList.add('osm-tile');
     }
     
+    // Try to load the tile image
+    const img = new Image();
+    img.onload = () => {
+        tile.style.backgroundImage = `url(${tileUrl})`;
+        tile.classList.remove('loading');
+        tile.classList.add('loaded');
+        label.style.display = 'none';
+        
+        // Add attribution overlay
+        if (!isHKTile) {
+            const attribution = document.createElement('div');
+            attribution.className = 'tile-attribution';
+            attribution.textContent = 'OSM';
+            tile.appendChild(attribution);
+        }
+    };
+    img.onerror = () => {
+        tile.classList.remove('loading');
+        tile.classList.add('error');
+        label.textContent = `${z}/${x}/${y} (unavailable)`;
+    };
+    
+    // Add crossorigin for external tiles
+    if (!isHKTile) {
+        img.crossOrigin = 'anonymous';
+    }
+    
+    img.src = tileUrl;
     mapGrid.appendChild(tile);
 }
 
@@ -187,25 +217,25 @@ function updateCoordinateDisplay() {
     document.getElementById('center').textContent = 
         `${currentCenter.lat.toFixed(4)}, ${currentCenter.lng.toFixed(4)}`;
     
-    // Show representative tile coordinates for the current zoom level
-    let centerTileX, centerTileY;
-    if (currentZoom === 12) {
-        centerTileX = 771;
-        centerTileY = 575;
-    } else {
-        centerTileX = 1539;
-        centerTileY = 1150;
-    }
-    
+    const centerTile = latLngToTile(currentCenter.lat, currentCenter.lng, currentZoom);
     document.getElementById('tileCoords').textContent = 
-        `${currentZoom}/${centerTileX}/${centerTileY}`;
+        `${currentZoom}/${centerTile.x}/${centerTile.y}`;
+    
+    // Update zoom level display
+    const zoomDisplay = document.getElementById('zoomLevels');
+    if (zoomDisplay) {
+        const hkAvailable = (currentZoom === 12 || currentZoom === 13);
+        zoomDisplay.textContent = hkAvailable ? 
+            `1-${MAX_ZOOM} (HK Gov tiles available at current zoom)` : 
+            `1-${MAX_ZOOM} (Using OpenStreetMap at current zoom)`;
+    }
 }
 
-// Utility function to check if a tile is valid based on provided bounds
-function isValidTile(z, x, y) {
-    if (!TILE_BOUNDS[z]) return false;
+// Utility function to check if a tile is valid for Hong Kong Government service
+function isValidHKTile(z, x, y) {
+    if (!HK_TILE_BOUNDS[z]) return false;
     
-    const bounds = TILE_BOUNDS[z];
+    const bounds = HK_TILE_BOUNDS[z];
     
     // Check X bounds
     if (x < bounds.x.min || x > bounds.x.max) return false;
@@ -222,7 +252,7 @@ function isValidTile(z, x, y) {
         return y >= 1142 && y <= 1158; // Approximate bounds for zoom 13
     }
     
-    return true;
+    return false;
 }
 
 // Convert lat/lng to tile coordinates (Web Mercator projection)
@@ -271,11 +301,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Export functions for potential external use
 window.HKMap = {
-    isValidTile,
+    isValidHKTile,
     tileToLatLng,
     latLngToTile,
-    TILE_BOUNDS,
+    HK_TILE_BOUNDS,
     HONG_KONG_CENTER,
     getCurrentZoom: () => currentZoom,
-    getCurrentCenter: () => currentCenter
+    getCurrentCenter: () => currentCenter,
+    setZoom: (zoom) => {
+        if (zoom >= MIN_ZOOM && zoom <= MAX_ZOOM) {
+            currentZoom = zoom;
+            updateMapView();
+        }
+    },
+    setCenter: (lat, lng) => {
+        currentCenter = { lat, lng };
+        updateMapView();
+    }
 };

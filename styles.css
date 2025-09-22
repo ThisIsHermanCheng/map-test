@@ -261,3 +261,66 @@ body {
     animation: pulse 1.5s ease-in-out infinite;
     background-color: #f0f8ff;
 }
+
+/* Different styles for different tile sources */
+.tile.hk-tile {
+    border-color: #4CAF50;
+}
+
+.tile.osm-tile {
+    border-color: #2196F3;
+}
+
+.tile.hk-tile.loaded {
+    box-shadow: 0 0 0 2px #4CAF50;
+}
+
+.tile.osm-tile.loaded {
+    box-shadow: 0 0 0 2px #2196F3;
+}
+
+/* Tile attribution */
+.tile-attribution {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 8px;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+/* Legend styles */
+.layer-legend {
+    background: #e8f4fd;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 15px;
+    border-left: 4px solid #2196F3;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 10px;
+    border: 2px solid;
+}
+
+.hk-tile-sample {
+    background-color: #e8f5e8;
+    border-color: #4CAF50;
+}
+
+.osm-tile-sample {
+    background-color: #e3f2fd;
+    border-color: #2196F3;
+}
