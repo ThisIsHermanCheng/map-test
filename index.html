@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hong Kong Interactive Map</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Hong Kong Interactive Map</h1>
+        <p>Interactive map using Hong Kong Government map tiles</p>
+    </div>
+    
+    <div class="map-container">
+        <div id="map">
+            <div class="map-grid" id="mapGrid"></div>
+            <div class="map-controls">
+                <button id="zoomIn" class="control-btn">+</button>
+                <button id="zoomOut" class="control-btn">-</button>
+            </div>
+            <div class="crosshair"></div>
+        </div>
+    </div>
+    
+    <div class="info-panel">
+        <h3>Map Information</h3>
+        <p><strong>Coordinate System:</strong> Web Mercator (EPSG:3857)</p>
+        <p><strong>Tile Source:</strong> Hong Kong Government Map Service</p>
+        <p><strong>Available Zoom Levels:</strong> 12-13</p>
+        <div id="coordinates">
+            <p><strong>Current View:</strong></p>
+            <p>Zoom: <span id="zoom">13</span></p>
+            <p>Center: <span id="center">22.396, 114.109</span></p>
+            <p>Tile: <span id="tileCoords">Z/X/Y</span></p>
+        </div>
+        <div class="tile-info">
+            <h4>Tile Coverage</h4>
+            <p><strong>Zoom 12:</strong> X: 767-772, Y: 571-579 (for X=771)</p>
+            <p><strong>Zoom 13:</strong> X: 1534-1544, Y: 1142-1158 (for X=1534)</p>
+        </div>
+    </div>
+    
+    <!-- Custom JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
