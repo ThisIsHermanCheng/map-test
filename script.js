@@ -1,283 +1,283 @@
-// Hong Kong Interactive Map using Government Tile Service
-class HKMap {
-    constructor() {
-        this.map = null;
-        this.tileLayer = null;
-        this.errorNoticeShown = false;
-        this.minZoom = 12;
-        this.maxZoom = 15;
+class HongKongMap {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        this.tileSize = 256;
+        this.currentZoom = 13;
+        this.minZoom = 8;
+        this.maxZoom = 18;
+        
+        // Current view center (in tile coordinates) - will be calculated per zoom level
+        this.centerX = 1539; // Default for zoom 13
+        this.centerY = 1150; // Default for zoom 13
+        
+        // Pan offset from center
+        this.offsetX = 0;
+        this.offsetY = 0;
+        
+        // Define available tile ranges based on the confirmed constraints
+        this.tileConstraints = {
+            8: { x: [47, 49], y: [35, 37] },
+            9: { x: [95, 97], y: [71, 73] },
+            10: { x: [191, 193], y: [142, 145] },
+            11: { x: [383, 386], y: [285, 290] },
+            12: { x: [767, 772], y: [571, 579] },
+            13: { x: [1534, 1544], y: [1142, 1158] },
+            14: { x: [3068, 3088], y: [2284, 2315] },
+            15: { x: [6136, 6176], y: [4568, 4630] },
+            16: { x: [12273, 12352], y: [9136, 9259] },
+            17: { x: [24546, 24704], y: [18272, 18518] },
+            18: { x: [49093, 49408], y: [36544, 37036] }
+        };
+        
+        this.tiles = new Map();
+        this.isDragging = false;
+        this.dragStart = { x: 0, y: 0 };
+        
+        // Initialize center coordinates for current zoom level
+        this.updateCenterForZoom();
+        
         this.init();
     }
-
+    
     init() {
-        // Initialize the map centered on Hong Kong
-        // Using approximate coordinates for Hong Kong center
-        const hkCenter = [22.3193, 114.1694]; // Hong Kong center coordinates
-        const initialZoom = 12;
-
-        this.map = L.map('map', {
-            center: hkCenter,
-            zoom: initialZoom,
-            minZoom: this.minZoom,
-            maxZoom: this.maxZoom,
-            zoomControl: true
-        });
-
-        // Add custom tile layer using HK Government service
-        this.tileLayer = L.tileLayer('https://services2.map.gov.hk/ib20000/tile/{z}/{x}/{y}?blankTile=false', {
-            attribution: '© Hong Kong Government',
-            maxZoom: this.maxZoom,
-            minZoom: this.minZoom,
-            tileSize: 256,
-            zoomOffset: 0,
-            // Set bounds based on available tiles
-            bounds: this.calculateBounds()
-        });
-
-        this.tileLayer.addTo(this.map);
-
-        // Don't restrict map bounds too strictly - let users pan freely
-        // Tiles will only load where they exist, showing gray for missing areas
-        // this.map.setMaxBounds(this.calculateBounds());
+        this.setupEventListeners();
+        this.render();
+        this.updateZoomDisplay();
+    }
+    
+    setupEventListeners() {
+        // Mouse events for panning
+        this.container.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        this.container.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        this.container.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        this.container.addEventListener('mouseleave', this.handleMouseUp.bind(this));
         
-        // Add event listeners
-        this.addEventListeners();
+        // Touch events for mobile
+        this.container.addEventListener('touchstart', this.handleTouchStart.bind(this));
+        this.container.addEventListener('touchmove', this.handleTouchMove.bind(this));
+        this.container.addEventListener('touchend', this.handleTouchEnd.bind(this));
         
-        // Add custom controls
-        this.addCustomControls();
-    }
-
-    calculateBounds() {
-        // Calculate bounds based on CONSERVATIVE tile coordinates that definitely exist
-        // Using the center range to avoid edge cases where tiles might not exist
-        // For zoom 12: focusing on x=769-771, y=573-577 (center of the known range)
+        // Prevent context menu
+        this.container.addEventListener('contextmenu', e => e.preventDefault());
         
-        // Using zoom level 12 as reference for bounds calculation
-        // Using CONSERVATIVE coordinates to ensure tiles exist
-        const zoom = 12;
-        const minX = 769; // Conservative start (was 767)
-        const maxX = 771; // Conservative end (was 772)  
-        const minY = 573; // Conservative start (was 571)
-        const maxY = 577; // Conservative end (was 579)
-
-        const southWest = this.tileToLatLng(minX, maxY + 1, zoom);
-        const northEast = this.tileToLatLng(maxX + 1, minY, zoom);
-
-        return L.latLngBounds(southWest, northEast);
+        // Zoom controls
+        document.getElementById('zoom-in').addEventListener('click', () => this.zoomIn());
+        document.getElementById('zoom-out').addEventListener('click', () => this.zoomOut());
+        
+        // Click coordinates
+        this.container.addEventListener('click', this.handleClick.bind(this));
+        
+        // Prevent image dragging
+        this.container.addEventListener('dragstart', e => e.preventDefault());
     }
-
-    tileToLatLng(x, y, z) {
-        // Convert tile coordinates to latitude/longitude
-        const n = Math.PI - 2 * Math.PI * y / Math.pow(2, z);
-        const lat = (180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))));
-        const lng = (x / Math.pow(2, z) * 360 - 180);
-        return L.latLng(lat, lng);
+    
+    handleMouseDown(e) {
+        this.isDragging = true;
+        this.dragStart = { x: e.clientX, y: e.clientY };
+        this.container.style.cursor = 'grabbing';
     }
-
-    addEventListeners() {
-        // Add map event listeners
-        this.map.on('zoomend', () => {
-            console.log('Current zoom level:', this.map.getZoom());
-        });
-
-        this.map.on('moveend', () => {
-            const center = this.map.getCenter();
-            console.log('Map center:', center.lat.toFixed(4), center.lng.toFixed(4));
-        });
-
-        // Handle tile load errors
-        this.tileLayer.on('tileerror', (e) => {
-            console.warn('Tile load error:', e);
-            // Add visual feedback for tile loading issues
-            this.showTileError();
-        });
-
-        this.tileLayer.on('tileload', (e) => {
-            console.log('Tile loaded:', e.url);
-        });
+    
+    handleMouseMove(e) {
+        if (!this.isDragging) return;
+        
+        const deltaX = e.clientX - this.dragStart.x;
+        const deltaY = e.clientY - this.dragStart.y;
+        
+        this.offsetX += deltaX;
+        this.offsetY += deltaY;
+        
+        this.dragStart = { x: e.clientX, y: e.clientY };
+        this.render();
     }
-
-    addCustomControls() {
-        // Add a custom control for map information
-        const InfoControl = L.Control.extend({
-            onAdd: function(map) {
-                const div = L.DomUtil.create('div', 'leaflet-control-custom');
-                div.innerHTML = `
-                    <div style="background: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                        <strong>HK Map Info</strong><br>
-                        <small id="zoom-info">Zoom: 12-15 levels<br>
-                        Tiles: HK Gov API</small>
-                    </div>
-                `;
-                return div;
-            },
-            onRemove: function(map) {
-                // Nothing to do here
+    
+    handleMouseUp() {
+        this.isDragging = false;
+        this.container.style.cursor = 'grab';
+    }
+    
+    handleTouchStart(e) {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            this.handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+        }
+    }
+    
+    handleTouchMove(e) {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            this.handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+        }
+    }
+    
+    handleTouchEnd(e) {
+        e.preventDefault();
+        this.handleMouseUp();
+    }
+    
+    handleClick(e) {
+        const rect = this.container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const tileX = Math.floor((x - this.offsetX + this.container.offsetWidth / 2) / this.tileSize + this.centerX);
+        const tileY = Math.floor((y - this.offsetY + this.container.offsetHeight / 2) / this.tileSize + this.centerY);
+        
+        document.getElementById('coordinates').textContent = 
+            `Tile: ${tileX}, ${tileY} | Zoom: ${this.currentZoom}`;
+    }
+    
+    zoomIn() {
+        if (this.currentZoom < this.maxZoom) {
+            const oldZoom = this.currentZoom;
+            this.currentZoom++;
+            
+            // Reset offsets when changing zoom levels to center properly
+            this.offsetX = 0;
+            this.offsetY = 0;
+            
+            // Update center coordinates for new zoom level
+            this.updateCenterForZoom();
+            
+            this.updateZoomDisplay();
+            this.clearTiles();
+            this.render();
+        }
+    }
+    
+    zoomOut() {
+        if (this.currentZoom > this.minZoom) {
+            const oldZoom = this.currentZoom;
+            this.currentZoom--;
+            
+            // Reset offsets when changing zoom levels to center properly
+            this.offsetX = 0;
+            this.offsetY = 0;
+            
+            // Update center coordinates for new zoom level
+            this.updateCenterForZoom();
+            
+            this.updateZoomDisplay();
+            this.clearTiles();
+            this.render();
+        }
+    }
+    
+    updateZoomDisplay() {
+        document.getElementById('zoom-level').textContent = `Zoom: ${this.currentZoom}`;
+    }
+    
+    updateCenterForZoom() {
+        const constraints = this.tileConstraints[this.currentZoom];
+        if (constraints) {
+            // Center within the valid tile range
+            this.centerX = Math.floor((constraints.x[0] + constraints.x[1]) / 2);
+            this.centerY = Math.floor((constraints.y[0] + constraints.y[1]) / 2);
+        }
+    }
+    
+    clearTiles() {
+        this.tiles.forEach(tile => {
+            if (tile.element && tile.element.parentNode) {
+                tile.element.parentNode.removeChild(tile.element);
             }
         });
-
-        const infoControl = new InfoControl({ position: 'bottomright' });
-        infoControl.addTo(this.map);
-
-        // Add reset view control
-        const ResetControl = L.Control.extend({
-            onAdd: function(map) {
-                const div = L.DomUtil.create('div', 'leaflet-control-custom');
-                div.innerHTML = `
-                    <button style="padding: 5px 10px; cursor: pointer; border: none; background: white; border-radius: 3px;">
-                        Reset View
-                    </button>
-                `;
-                div.addEventListener('click', () => {
-                    map.setView([22.3193, 114.1694], 12);
-                });
-                return div;
-            }
-        });
-
-        const resetControl = new ResetControl({ position: 'topleft' });
-        resetControl.addTo(this.map);
-
-        // Add zoom level configuration control
-        const ZoomConfigControl = L.Control.extend({
-            onAdd: function(mapInstance) {
-                const div = L.DomUtil.create('div', 'leaflet-control-custom');
-                div.innerHTML = `
-                    <div style="background: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); min-width: 200px;">
-                        <strong>Zoom Configuration</strong><br>
-                        <label style="font-size: 12px;">Min Zoom: 
-                            <select id="minZoomSelect" style="margin: 2px;">
-                                <option value="10">10</option>
-                                <option value="11">11</option>
-                                <option value="12" selected>12</option>
-                                <option value="13">13</option>
-                            </select>
-                        </label><br>
-                        <label style="font-size: 12px;">Max Zoom: 
-                            <select id="maxZoomSelect" style="margin: 2px;">
-                                <option value="13">13</option>
-                                <option value="14">14</option>
-                                <option value="15" selected>15</option>
-                                <option value="16">16</option>
-                                <option value="17">17</option>
-                                <option value="18">18</option>
-                            </select>
-                        </label><br>
-                        <button id="applyZoomBtn" style="margin-top: 5px; padding: 3px 8px; cursor: pointer; font-size: 11px;">Apply</button>
-                    </div>
-                `;
-                return div;
-            }
-        });
-
-        const zoomConfigControl = new ZoomConfigControl({ position: 'topright' });
-        zoomConfigControl.addTo(this.map);
-
-        // Add event listeners for zoom configuration
-        setTimeout(() => {
-            const minZoomSelect = document.getElementById('minZoomSelect');
-            const maxZoomSelect = document.getElementById('maxZoomSelect');
-            const applyBtn = document.getElementById('applyZoomBtn');
-
-            if (applyBtn) {
-                applyBtn.addEventListener('click', () => {
-                    const newMinZoom = parseInt(minZoomSelect.value);
-                    const newMaxZoom = parseInt(maxZoomSelect.value);
+        this.tiles.clear();
+    }
+    
+    isTileAvailable(x, y, z) {
+        const constraints = this.tileConstraints[z];
+        if (!constraints) return false;
+        
+        return x >= constraints.x[0] && x <= constraints.x[1] && 
+               y >= constraints.y[0] && y <= constraints.y[1];
+    }
+    
+    createTile(x, y, z) {
+        const tileKey = `${z}-${x}-${y}`;
+        
+        if (this.tiles.has(tileKey)) {
+            return this.tiles.get(tileKey).element;
+        }
+        
+        const tileDiv = document.createElement('div');
+        tileDiv.className = 'map-tile loading';
+        
+        const tile = { element: tileDiv, loaded: false };
+        this.tiles.set(tileKey, tile);
+        
+        if (this.isTileAvailable(x, y, z)) {
+            const img = new Image();
+            img.onload = () => {
+                tileDiv.innerHTML = '';
+                tileDiv.appendChild(img);
+                tileDiv.className = 'map-tile';
+                tile.loaded = true;
+            };
+            
+            img.onerror = () => {
+                tileDiv.className = 'map-tile error';
+                tileDiv.textContent = 'Tile not available';
+            };
+            
+            const url = `https://services2.map.gov.hk/ib20000/tile/${z}/${x}/${y}?blankTile=false`;
+            img.src = url;
+        } else {
+            tileDiv.className = 'map-tile error';
+            tileDiv.textContent = 'Out of bounds';
+        }
+        
+        return tileDiv;
+    }
+    
+    render() {
+        // Clear existing tiles from DOM
+        const existingTiles = this.container.querySelectorAll('.map-tile');
+        existingTiles.forEach(tile => tile.remove());
+        
+        const containerWidth = this.container.offsetWidth;
+        const containerHeight = this.container.offsetHeight;
+        
+        // Calculate which tiles are visible
+        const centerScreenX = containerWidth / 2;
+        const centerScreenY = containerHeight / 2;
+        
+        // Calculate tile coordinates for the current view
+        const startTileX = Math.floor((centerScreenX - this.offsetX) / this.tileSize) + this.centerX - Math.ceil(containerWidth / this.tileSize / 2) - 1;
+        const endTileX = startTileX + Math.ceil(containerWidth / this.tileSize) + 2;
+        const startTileY = Math.floor((centerScreenY - this.offsetY) / this.tileSize) + this.centerY - Math.ceil(containerHeight / this.tileSize / 2) - 1;
+        const endTileY = startTileY + Math.ceil(containerHeight / this.tileSize) + 2;
+        
+        // Get valid tile constraints for current zoom level
+        const constraints = this.tileConstraints[this.currentZoom];
+        
+        // Render visible tiles, but only within valid constraints
+        // Y outer, X inner to ensure proper row-by-row tile ordering
+        for (let tileY = startTileY; tileY <= endTileY; tileY++) {
+            for (let tileX = startTileX; tileX <= endTileX; tileX++) {
+                // Only create tiles that are within the valid range
+                if (constraints && 
+                    tileX >= constraints.x[0] && tileX <= constraints.x[1] &&
+                    tileY >= constraints.y[0] && tileY <= constraints.y[1]) {
                     
-                    if (newMinZoom >= newMaxZoom) {
-                        alert('Min zoom must be less than max zoom');
-                        return;
-                    }
+                    const tileElement = this.createTile(tileX, tileY, this.currentZoom);
                     
-                    this.updateZoomLevels(newMinZoom, newMaxZoom);
-                });
-            }
-        }, 100);
-    }
-
-    updateZoomLevels(minZoom, maxZoom) {
-        this.minZoom = minZoom;
-        this.maxZoom = maxZoom;
-        
-        // Update map zoom constraints
-        this.map.setMinZoom(minZoom);
-        this.map.setMaxZoom(maxZoom);
-        
-        // Update tile layer zoom constraints
-        this.tileLayer.options.minZoom = minZoom;
-        this.tileLayer.options.maxZoom = maxZoom;
-        
-        // Refresh the tile layer
-        this.tileLayer.redraw();
-        
-        // Ensure current zoom is within new bounds
-        const currentZoom = this.map.getZoom();
-        if (currentZoom < minZoom) {
-            this.map.setZoom(minZoom);
-        } else if (currentZoom > maxZoom) {
-            this.map.setZoom(maxZoom);
-        }
-        
-        console.log(`Zoom levels updated: ${minZoom} - ${maxZoom}`);
-        
-        // Update info display
-        this.updateInfoDisplay();
-    }
-
-    updateInfoDisplay() {
-        const infoElement = document.querySelector('#info p:nth-child(2)');
-        if (infoElement) {
-            infoElement.textContent = `Zoom levels available: ${this.minZoom}-${this.maxZoom}`;
-        }
-        
-        const zoomInfo = document.getElementById('zoom-info');
-        if (zoomInfo) {
-            zoomInfo.innerHTML = `Zoom: ${this.minZoom}-${this.maxZoom} levels<br>Tiles: HK Gov API`;
-        }
-    }
-
-    showTileError() {
-        // Add a notice about tile loading when there are network issues
-        if (!this.errorNoticeShown) {
-            const ErrorNotice = L.Control.extend({
-                onAdd: function(map) {
-                    const div = L.DomUtil.create('div', 'leaflet-control-custom');
-                    div.innerHTML = `
-                        <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); max-width: 250px;">
-                            <strong>⚠️ Tile Loading Notice</strong><br>
-                            <small>Tiles may not load in restricted environments.<br>
-                            The map structure and API integration are working correctly.</small>
-                        </div>
-                    `;
-                    return div;
+                    const screenX = (tileX - this.centerX) * this.tileSize + centerScreenX + this.offsetX;
+                    const screenY = (tileY - this.centerY) * this.tileSize + centerScreenY + this.offsetY;
+                    
+                    tileElement.style.position = 'absolute';
+                    tileElement.style.left = `${screenX}px`;
+                    tileElement.style.top = `${screenY}px`;
+                    
+                    this.container.appendChild(tileElement);
                 }
-            });
-
-            const errorNotice = new ErrorNotice({ position: 'bottomleft' });
-            errorNotice.addTo(this.map);
-            this.errorNoticeShown = true;
-        }
-    }
-
-    // Method to check tile availability
-    async checkTileAvailability(z, x, y) {
-        const url = `https://services2.map.gov.hk/ib20000/tile/${z}/${x}/${y}?blankTile=false`;
-        try {
-            const response = await fetch(url, { method: 'HEAD' });
-            return response.ok;
-        } catch (error) {
-            return false;
+            }
         }
     }
 }
 
 // Initialize the map when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing Hong Kong Interactive Map...');
-    const hkMap = new HKMap();
-    
-    // Make the map instance globally available for debugging
-    window.hkMap = hkMap;
-    
-    console.log('Map initialized successfully!');
+document.addEventListener('DOMContentLoaded', () => {
+    const map = new HongKongMap('map');
 });
