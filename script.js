@@ -36,8 +36,9 @@ class HKMap {
 
         this.tileLayer.addTo(this.map);
 
-        // Set map bounds to Hong Kong area based on available tiles
-        this.map.setMaxBounds(this.calculateBounds());
+        // Don't restrict map bounds too strictly - let users pan freely
+        // Tiles will only load where they exist, showing gray for missing areas
+        // this.map.setMaxBounds(this.calculateBounds());
         
         // Add event listeners
         this.addEventListeners();
@@ -47,18 +48,17 @@ class HKMap {
     }
 
     calculateBounds() {
-        // Calculate bounds based on available tile coordinates
-        // For zoom 12: x=767-772, y=571-579 (for x=771 specifically)
-        // For zoom 13: x=1534-1544, y=1142-1158 (for x=1534 specifically)
-        // But we should calculate broader bounds to allow proper navigation
+        // Calculate bounds based on CONSERVATIVE tile coordinates that definitely exist
+        // Using the center range to avoid edge cases where tiles might not exist
+        // For zoom 12: focusing on x=769-771, y=573-577 (center of the known range)
         
         // Using zoom level 12 as reference for bounds calculation
-        // Expanding the bounds to be more generous for Hong Kong area
+        // Using CONSERVATIVE coordinates to ensure tiles exist
         const zoom = 12;
-        const minX = 766; // Slightly wider than 767
-        const maxX = 773; // Slightly wider than 772
-        const minY = 570; // Slightly wider than 571
-        const maxY = 580; // Slightly wider than 579
+        const minX = 769; // Conservative start (was 767)
+        const maxX = 771; // Conservative end (was 772)  
+        const minY = 573; // Conservative start (was 571)
+        const maxY = 577; // Conservative end (was 579)
 
         const southWest = this.tileToLatLng(minX, maxY + 1, zoom);
         const northEast = this.tileToLatLng(maxX + 1, minY, zoom);
