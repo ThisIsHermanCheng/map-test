@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hong Kong Interactive Map</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="map-container">
+        <h1>Hong Kong Interactive Map</h1>
+        <div id="map"></div>
+        <div id="controls">
+            <button id="zoom-in">+</button>
+            <button id="zoom-out">-</button>
+            <span id="zoom-level">Zoom: 13</span>
+            <div id="coordinates">Click on map to see coordinates</div>
+        </div>
+        <div id="info">
+            <p>Interactive map using Hong Kong Government tile service</p>
+            <p>Zoom levels available: 8-18</p>
+            <p>API: <code>https://services2.map.gov.hk/ib20000/tile/{z}/{x}/{y}</code></p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

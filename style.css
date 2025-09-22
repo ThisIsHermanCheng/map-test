@@ -1,0 +1,156 @@
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+
+#map-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    background-color: #2c3e50;
+    color: white;
+}
+
+#map {
+    height: 600px;
+    width: 100%;
+    border: 2px solid #ddd;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    background-color: #e6f3ff;
+}
+
+#controls {
+    padding: 15px 20px;
+    background-color: #ecf0f1;
+    border-top: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#controls button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background-color: #3498db;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+#controls button:hover {
+    background-color: #2980b9;
+}
+
+#controls button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+#zoom-level {
+    font-weight: bold;
+    color: #2c3e50;
+    min-width: 80px;
+}
+
+#coordinates {
+    color: #666;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    flex-grow: 1;
+}
+
+#info {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
+}
+
+#info p {
+    margin: 5px 0;
+    color: #555;
+}
+
+#info code {
+    background-color: #e9ecef;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    color: #d63384;
+}
+
+/* Map tile styles */
+.map-tile {
+    width: 256px;
+    height: 256px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.map-tile.loading {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    font-size: 12px;
+}
+
+.map-tile.error {
+    background-color: #ffebee;
+    color: #c62828;
+    font-size: 10px;
+    text-align: center;
+    padding: 5px;
+}
+
+.map-tile.loading::before {
+    content: "Loading...";
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    #map {
+        height: 400px;
+    }
+    
+    #controls {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    #controls button {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+}
